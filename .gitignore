@@ -1,13 +1,11 @@
 data/
 models/
-results/
+results/*.pkl
+results/*.gif
+results/*.mp4
 __pycache__/
 *.pyc
 *.pyo
 .DS_Store
-*.pkl
 *.pt
-*.gif
-*.mp4
-*.png
 simoprl_context.md.pdf
