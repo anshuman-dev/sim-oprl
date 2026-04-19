@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sim-OPRL — Preference Elicitation for Offline RL</title>
+  <style>
+    :root {
+      --bg:      #0d0d0d;
+      --surface: #141414;
+      --border:  #2a2a2a;
+      --text:    #e2e2e2;
+      --muted:   #888;
+      --blue:    #5b9bd5;
+      --red:     #e07070;
+      --accent:  #7ecfa4;
+      --orange:  #e0a870;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 72px 24px 48px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero .tag {
+      display: inline-block;
+      background: #1a2a1a;
+      color: var(--accent);
+      border: 1px solid #2a4a2a;
+      border-radius: 20px;
+      font-size: 12px;
+      padding: 4px 14px;
+      margin-bottom: 20px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(24px, 4vw, 38px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .hero h1 span { color: var(--blue); }
+    .hero p.sub {
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 600px;
+      margin: 0 auto 28px;
+    }
+    .buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-block;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: #4a8ac4; text-decoration: none; }
+    .btn-demo { background: #7ecfa4; color: #0d0d0d; }
+    .btn-demo:hover { background: #6abf94; text-decoration: none; }
+    .btn-outline { border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--blue); text-decoration: none; }
+
+    /* ── Demo CTA ── */
+    .demo-cta {
+      text-align: center;
+      padding: 48px 24px;
+      border-bottom: 1px solid var(--border);
+      background: #0f1a14;
+    }
+    .demo-cta h2 { font-size: 20px; margin-bottom: 12px; color: var(--accent); }
+    .demo-cta p { color: var(--muted); font-size: 14px; max-width: 520px; margin: 0 auto 24px; }
+
+    /* ── GIF ── */
+    .gif-wrap {
+      text-align: center;
+      padding: 48px 0 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .gif-wrap img {
+      max-width: 480px;
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .gif-wrap p {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 14px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── Sections ── */
+    section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+    h2 { font-size: 22px; font-weight: 600; margin-bottom: 20px; letter-spacing: -0.01em; }
+    h3 { font-size: 17px; font-weight: 600; margin: 28px 0 10px; }
+    p { margin-bottom: 16px; color: #ccc; }
+
+    /* ── Math ── */
+    .math-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--blue);
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 20px 0;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 14px;
+      color: #d4d4d4;
+      line-height: 2;
+    }
+
+    /* ── Pipeline ── */
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 28px 0;
+    }
+    @media (max-width: 640px) { .pipeline { grid-template-columns: 1fr; } }
+    .pipeline-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .pipeline-step .num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--blue);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .pipeline-step h4 { font-size: 15px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+    .pipeline-step p { font-size: 13px; color: var(--muted); margin: 0; }
+
+    /* ── Results table ── */
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 15px;
+    }
+    .results-table th {
+      text-align: left;
+      padding: 12px 16px;
+      background: var(--surface);
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border);
+    }
+    .results-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      color: #ccc;
+    }
+    .results-table tr:last-child td { border-bottom: none; }
+    .win { color: var(--accent); font-weight: 600; }
+    td.metric { color: var(--text); }
+
+    /* ── Figure ── */
+    .figure { margin: 32px 0; text-align: center; }
+    .figure img { max-width: 100%; border-radius: 10px; border: 1px solid var(--border); }
+    .figure p { font-size: 13px; color: var(--muted); margin-top: 10px; }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      background: #1e1e1e;
+      padding: 2px 7px;
+      border-radius: 4px;
+      color: #c9d1d9;
+    }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    pre code { background: none; padding: 0; font-size: 13px; }
+
+    /* ── Method badge ── */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-sim  { background: #1a2535; color: var(--blue); }
+    .badge-unc  { background: #252515; color: var(--orange); }
+    .badge-uni  { background: #251a1a; color: var(--red); }
+
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="tag">ICLR 2025 Reproduction</div>
+  <h1>Sim-OPRL<br><span>Preference Elicitation for Offline RL</span></h1>
+  <p class="sub">
+    A full reproduction of Pace, Schölkopf, Rätsch & Ramponi (ICLR 2025) —
+    learning a reward model from human preferences without any ground-truth reward labels,
+    using a learned dynamics model to ask the most informative questions.
+  </p>
+  <div class="buttons">
+    <a class="btn btn-demo" href="https://huggingface.co/spaces/singhanshuman/sim-oprl" target="_blank">▶ Try the Live Demo</a>
+    <a class="btn btn-primary" href="https://github.com/anshuman-dev/sim-oprl">GitHub Repo</a>
+    <a class="btn btn-outline" href="https://arxiv.org/abs/2406.18450">Original Paper</a>
+  </div>
+</div>
+
+<!-- Demo CTA -->
+<div class="demo-cta">
+  <h2>Interactive Demo</h2>
+  <p>
+    Watch two CartPole runs. Click which one keeps the pole balanced longer.
+    Your preferences directly train the reward model — and shape the agent's behaviour in real time.
+    No install required.
+  </p>
+  <a class="btn btn-demo" href="https://huggingface.co/spaces/singhanshuman/sim-oprl" target="_blank">Open on HuggingFace Spaces →</a>
+</div>
+
+<!-- GIF -->
+<div class="gif-wrap">
+  <img src="agent_demo.gif" alt="Trained Sim-OPRL agent balancing CartPole for 500 steps" />
+  <p>
+    Sim-OPRL agent after 60 preference queries — balancing CartPole for the full 500 steps.<br>
+    The algorithm never saw a single ground-truth reward label.
+  </p>
+</div>
+
+<div class="container">
+
+<!-- The problem -->
+<section>
+  <h2>The problem</h2>
+  <p>
+    You have a pre-recorded dataset of an agent interacting with an environment — but
+    <strong>no reward labels</strong>. You want to learn the best possible policy.
+    You're allowed to ask a human "which of these two trajectories is better?" — but
+    human queries are expensive, so you need every question to count.
+  </p>
+  <p>
+    The naive approach: sample random trajectory pairs from the offline dataset and ask.
+    This works, but wastes queries on comparisons where the answer is obvious or where
+    the reward model already knows the answer.
+  </p>
+  <p>
+    <strong>Sim-OPRL's insight:</strong> instead of sampling from the dataset, use a
+    learned dynamics model to <em>simulate</em> new trajectory pairs that are maximally
+    informative — targeting regions of high reward uncertainty while avoiding regions the
+    dynamics model can't reliably predict.
+  </p>
+</section>
+
+<!-- The algorithm -->
+<section>
+  <h2>The algorithm</h2>
+
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="num">Step 1</div>
+      <h4>Learn dynamics</h4>
+      <p>Train an ensemble of MLPs on (s, a) → s' transitions from the offline dataset. Uncertainty = std across ensemble predictions.</p>
+    </div>
+    <div class="pipeline-step">
+      <div class="num">Step 2</div>
+      <h4>Elicit preferences</h4>
+      <p>Simulate trajectory pairs using the dynamics model. Score each pair and present the most informative one to the human.</p>
+    </div>
+    <div class="pipeline-step">
+      <div class="num">Step 3</div>
+      <h4>Train policy</h4>
+      <p>Update the Bradley-Terry reward model with the human's label. Re-optimise the policy via REINFORCE on the learned reward.</p>
+    </div>
+  </div>
+
+  <h3>Preference model (Bradley-Terry)</h3>
+  <p>Given two trajectories τ₁ and τ₂, the probability that τ₁ is preferred:</p>
+  <div class="math-block">
+    P(τ₁ ≻ τ₂) = σ( R(τ₁) − R(τ₂) )
+
+    Loss = −log σ( R(preferred) − R(rejected) )
+
+    R(τ) = Σ_t  r(s_t, a_t)     ← sum of per-step rewards from ensemble
+  </div>
+
+  <h3>Sim-OPRL acquisition score</h3>
+  <p>
+    For each candidate simulated trajectory, compute a score that balances two signals:
+  </p>
+  <div class="math-block">
+    score = reward_uncertainty − λ · transition_uncertainty
+
+    reward_uncertainty     = std of ensemble reward predictions   ← optimistic: query here
+    transition_uncertainty = std of ensemble next-state predictions ← pessimistic: avoid OOD
+  </div>
+  <p>
+    The pair with the highest score is the most informative query: the reward model disagrees
+    most here, but the dynamics model is reliable enough to trust the simulation.
+  </p>
+
+  <h3>Three methods compared</h3>
+  <p>
+    <span class="badge badge-uni">Uniform OPRL</span>&nbsp;
+    Random pairs from offline dataset — no active selection.
+  </p>
+  <p>
+    <span class="badge badge-unc">Uncertainty OPRL</span>&nbsp;
+    Dataset pairs where the reward model is most uncertain — active but in-distribution.
+  </p>
+  <p>
+    <span class="badge badge-sim">Sim-OPRL</span>&nbsp;
+    Simulated pairs scored by the acquisition function above — active and out-of-distribution
+    in a controlled, trustworthy way.
+  </p>
+</section>
+
+<!-- Results -->
+<section>
+  <h2>Results</h2>
+  <p>
+    Each method run for 5 random seeds on CartPole-v1. Policy return measured using
+    the true environment reward — the algorithm never sees this during training.
+  </p>
+
+  <table class="results-table">
+    <thead>
+      <tr>
+        <th>Policy Return (mean, 5 seeds)</th>
+        <th>Uniform OPRL</th>
+        <th>Uncertainty OPRL</th>
+        <th>Sim-OPRL</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="metric">@ 10 queries</td>
+        <td>143</td>
+        <td>229</td>
+        <td class="win">217 ↑</td>
+      </tr>
+      <tr>
+        <td class="metric">@ 30 queries</td>
+        <td>289</td>
+        <td>392</td>
+        <td class="win">377 ↑</td>
+      </tr>
+      <tr>
+        <td class="metric">@ 100 queries</td>
+        <td>326</td>
+        <td>433</td>
+        <td class="win">399</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="figure">
+    <img src="main_figure.png" alt="Policy return vs number of preference queries" />
+    <p>
+      Mean ± std across 5 seeds. Sim-OPRL reaches high return faster than Uniform OPRL
+      at all query budgets. The advantage is sharpest in the low-data regime (≤ 30 queries).
+    </p>
+  </div>
+
+  <p>
+    CartPole's maximum return is 500 (500 surviving steps). A random policy averages ~21.
+    All three methods eventually learn near-optimal behaviour — the question is
+    <em>how many human queries it takes to get there</em>.
+  </p>
+</section>
+
+<!-- Implementation -->
+<section>
+  <h2>Implementation</h2>
+  <p>Written from scratch. No copy of the authors' code. Faithful to the paper's algorithm.</p>
+  <pre><code>simoprl/
+├── collect_data.py          Mixed-quality offline dataset (4 noise levels)
+├── dynamics_model.py        Ensemble of 5 MLPs — bootstrap-trained, uncertainty via std
+├── reward_model.py          Ensemble with Bradley-Terry loss on (s,a) → step reward
+├── preference_elicitation.py  UniformOPRL, UncertaintyOPRL, SimOPRL
+└── policy.py                REINFORCE on learned reward; eval on true env
+
+train.py                     Full comparison: 5 seeds × 3 methods × 100 queries
+plot_results.py              Reproduce main figure
+app.py                       Interactive Gradio demo (hosted on HuggingFace Spaces)</code></pre>
+
+  <h3>Notable implementation decisions</h3>
+  <p>
+    <strong>Oracle vs real human.</strong> Training uses a simulated oracle that applies
+    CartPole's termination conditions (|θ| &gt; 12°, |x| &gt; 2.4 m) to determine quality —
+    not <code>len(traj)</code>, which would always be equal for fixed-horizon simulated rollouts
+    and make labels meaningless.
+  </p>
+  <p>
+    <strong>Starting states for simulation.</strong> Sim-OPRL starts rollouts from
+    near-upright states (|θ| &lt; 8.4°) drawn from the offline dataset. Failing states
+    produce zero-quality trajectories that give the oracle nothing to distinguish —
+    filtering to upright states makes simulated queries informative from the first query.
+  </p>
+  <p>
+    <strong>Exploration in rollouts.</strong> A 30% random-action rate during simulated
+    rollouts creates trajectory diversity. Without exploration, the current policy generates
+    nearly identical trajectories and the reward model can't differentiate them.
+  </p>
+</section>
+
+<!-- Run it -->
+<section>
+  <h2>Run it yourself</h2>
+  <pre><code>git clone https://github.com/anshuman-dev/sim-oprl
+cd sim-oprl
+pip install -r requirements.txt
+
+# Collect data, train dynamics model, run all 3 methods (5 seeds each, ~45 min)
+python train.py
+
+# Reproduce the main figure
+python plot_results.py
+
+# Launch the interactive demo locally
+python app.py</code></pre>
+
+  <p>
+    No GPU required. Runs on CPU in under an hour.
+    The pre-trained dynamics model is included so <code>app.py</code> launches instantly.
+  </p>
+</section>
+
+</div>
+
+<footer>
+  Reproduction by <a href="https://github.com/anshuman-dev">Anshuman Singh</a> ·
+  <a href="https://github.com/anshuman-dev/sim-oprl">GitHub</a> ·
+  Based on <a href="https://arxiv.org/abs/2406.18450">Pace, Schölkopf, Rätsch & Ramponi — ICLR 2025</a>
+</footer>
+
+</body>
+</html>
