@@ -265,9 +265,9 @@ with gr.Blocks(title="Sim-OPRL Demo", theme=gr.themes.Soft()) as demo:
     status_box = gr.Textbox(label="Status", interactive=False, lines=1)
 
     with gr.Tabs():
-        with gr.TabItem("Live: Your Preferences → Agent Return"):
+        with gr.Tab("Live: Your Preferences → Agent Return"):
             live_plot = gr.Plot(label="Return vs Queries (updates every 5 clicks)")
-        with gr.TabItem("Baseline Comparison (from train.py)"):
+        with gr.Tab("Baseline Comparison (from train.py)"):
             comparison_plot = gr.Plot(label="Sim-OPRL vs Uniform OPRL vs Uncertainty OPRL")
 
     gr.Markdown("""

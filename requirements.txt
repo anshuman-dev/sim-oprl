@@ -4,4 +4,4 @@ torch>=2.0
 matplotlib>=3.7
 tqdm>=4.65
 imageio>=2.31
-gradio>=4.0
+gradio>=5.0
