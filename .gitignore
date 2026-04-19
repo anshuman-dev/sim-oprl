@@ -1,0 +1,13 @@
+data/
+models/
+results/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.pkl
+*.pt
+*.gif
+*.mp4
+*.png
+simoprl_context.md.pdf
