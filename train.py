@@ -36,7 +36,7 @@ RESULTS_PATH = "results/experiment_results.pkl"
 QUERY_CHECKPOINTS = [5, 10, 20, 30, 50, 75, 100]
 N_SEEDS = 5
 POLICY_UPDATE_EVERY = 5    # retrain policy every K queries
-POLICY_EPISODES = 50       # REINFORCE episodes per update
+POLICY_EPISODES = 80       # REINFORCE episodes per update
 EVAL_EPISODES = 20
 
 
