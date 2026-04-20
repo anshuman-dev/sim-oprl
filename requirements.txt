@@ -5,3 +5,4 @@ matplotlib>=3.7
 tqdm>=4.65
 imageio>=2.31
 gradio>=5.0
+pyaudioop
